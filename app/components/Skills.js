@@ -18,7 +18,7 @@ export default function Skills() {
               </p>
               <p className="mb-6 text-xl">
                 <strong className="text-[#d0def3] text-2xl">Tools & Platforms:</strong>{" "}
-                Git, GitLab, Linux, shell scripting, AWS (Lambda, S3), Kafka, DevOps, Docker
+                Git, GitLab, Linux, shell scripting, AWS (Lambda, S3), Kafka, Docker
               </p>
             </li>
           </ul>
