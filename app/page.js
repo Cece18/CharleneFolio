@@ -191,7 +191,7 @@ export default function Home() {
                 h-[80vh] sm:h-[75vh] lg:h-[66vh]
                 bg-[rgba(240,237,242,0.9)]
                 rounded-xl
-                outline outline-4 outline-[#5167b1] outline-offset-[-4px]
+                outline-4 outline-[#5167b1] outline-offset-[-4px]
                 z-30
                 overflow-hidden
                 flex flex-col
@@ -208,25 +208,26 @@ export default function Home() {
                     </span>
                   </div>
                   <button 
-                    onClick={() => setActiveWindow(null)}
-                    className="
-                      w-[50px] 
-                      h-[30px] 
-                      rounded-full 
-                      bg-[#e7f2f9] 
-                      cursor-pointer 
-                      text-center 
-                      leading-[28px]
-                      text-[1.2em]
-                      font-['MyFont2', quicksand]
-                      text-black
-                      hover:bg-[#d1e5f5]
-                      transition-colors
-                      duration-200
-                    "
-                  >
-                    ✕
-                  </button>
+                      onClick={() => setActiveWindow(null)}
+                      className="
+                        w-[60px] 
+                        h-[40px] 
+                        rounded-full 
+                        bg-[#e7f2f9] 
+                        cursor-pointer 
+                        text-center 
+                        leading-[38px]
+                        text-[1.4em]
+                        font-bold
+                        text-black
+                        hover:bg-[#d1e5f5]
+                        transition-colors
+                        duration-200
+                      "
+                    >
+                      ✕
+                    </button>
+
                 </div>
                 <div className="flex-1 p-5 overflow-y-auto">
                   {activeWindow === 'experience' ? (

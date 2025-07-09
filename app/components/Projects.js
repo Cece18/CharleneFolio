@@ -1,6 +1,6 @@
 export default function Projects() {
   return (
-    <div className="flex justify-center items-center h-full">
+    <div className="flex justify-center items-start h-full">
       <div className="section-container w-full max-w-[1200px] p-5 bg-transparent rounded-[20px] text-center relative overflow-hidden">
           <ul className="list-none p-0 m-0 relative z-[1]">
             <li className="bg-[rgba(101,101,142,0.85)] border-2 border-white/10 p-6 rounded-[15px] mb-5 text-left relative overflow-hidden text-[#f5f5f5]">
@@ -40,6 +40,27 @@ export default function Projects() {
                 <div className="flex-1">
                   <p className="text-base leading-[1.6]">
                     Developed a fraud detection system using Scikit-learn's Random Forest Classifier to classify transactions as fraudulent or legitimate based on various features.
+                  </p>
+                </div>
+              </div>
+            </li>
+
+            <li className="bg-[rgba(101,101,142,0.85)] border-2 border-white/10 p-6 rounded-[15px] mb-5 text-left relative overflow-hidden text-[#f5f5f5]">
+              <div className="mb-5">
+                <h3 className="text-2xl font-bold mb-2">Anime Awards Betting App</h3>
+                <span className="inline-block text-[0.9rem] text-[#d0def3] font-bold px-2.5 py-1 bg-white/10 rounded-[15px]">
+                  React, Spring Boot, PostgreSQL, Docker, Render
+                </span>
+              </div>
+              <div className="flex gap-5 items-start flex-col lg:flex-row">
+                <div className="w-full lg:w-[300px] overflow-hidden rounded-[10px] border-2 border-white/10">
+                  <a href="https://github.com/yourusername/portfolio" target="_blank" rel="noopener noreferrer">
+                    <img src="/images/AnimeBet.png" alt="Portfolio Preview" className="w-full h-auto block" />
+                  </a>
+                </div>
+                <div className="flex-1">
+                  <p className="text-base leading-[1.6]">
+                    Built a full-stack platform for anime award predictions. Integrated Jikan API, implemented RESTful microservices, and enabled secure point-based betting.
                   </p>
                 </div>
               </div>
