@@ -1,6 +1,6 @@
 export default function Experience() {
   return (
-    <div className="section-container experience-section p-5">
+    <div className="section-container experience-section p-5 overflow-y-auto scrollbar-hide">
       <ul>
         <li className="bg-[rgba(101,101,142,0.85)] border-2 border-white/10 p-4 sm:p-6 rounded-2xl mb-5 text-left relative overflow-hidden text-[#f5f5f5]">
           <div className="mb-4">
@@ -53,11 +53,11 @@ export default function Experience() {
             </li>
             <li className="relative pl-5 mb-2 leading-6 text-base">
               <span className="absolute left-0 text-[#b8c6db]">•</span>
-              Collaborated with the school's IT team to enhance and scale administrative software, ensuring long-term reliability and performance.
+              Collaborated with the school&#39;s IT team to enhance and scale administrative software, ensuring long-term reliability and performance.
             </li>
           </ul>
         </li>
       </ul>
     </div>
   )
-} 
+}

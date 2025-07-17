@@ -1,7 +1,7 @@
 export default function Skills() {
   return (
     <div className="flex justify-center items-center h-full">
-      <div className="section-container w-full max-w-[1200px] p-5 bg-transparent rounded-[20px] text-center relative overflow-hidden">
+      <div className="section-container w-full max-w-[1200px] p-5 bg-transparent rounded-[20px] text-center relative overflow-hidden mt-8">
         <div className="main w-full p-8 bg-[rgba(101,101,142,0.85)] rounded-[20px] shadow-[0_10px_20px_rgba(0,0,0,0.1)]">
           <h2 className="text-[2.5rem] mb-8 text-[#f5f5f5] font-bold relative z-[1]">
             Skills
@@ -26,4 +26,4 @@ export default function Skills() {
       </div>
     </div>
   )
-} 
+}
