@@ -12,7 +12,7 @@ export default function Projects() {
               </div>
               <div className="flex gap-5 items-start flex-col lg:flex-row">
                 <div className="w-full lg:w-[300px] overflow-hidden rounded-[10px] border-2 border-white/10">
-                  <a href="https://github.com/yourusername/portfolio" target="_blank" rel="noopener noreferrer">
+                  <a href="https://github.com/CaesarSaleh/SafeTune" target="_blank" rel="noopener noreferrer">
                     <img src="/images/Safetune.jpg" alt="Portfolio Preview" className="w-full h-auto block" />
                   </a>
                 </div>
@@ -33,13 +33,13 @@ export default function Projects() {
               </div>
               <div className="flex gap-5 items-start">
                 <div className="flex-none w-[300px] overflow-hidden rounded-[10px] border-2 border-white/10">
-                  <a href="https://github.com/yourusername/trading-system" target="_blank" rel="noopener noreferrer">
+                  <a href="https://github.com/Cece18/CC-Fraud-Detection" target="_blank" rel="noopener noreferrer">
                     <img src="/images/Fraudimage.png" alt="Trading System Preview" className="w-full h-auto block" />
                   </a>
                 </div>
                 <div className="flex-1">
                   <p className="text-base leading-[1.6]">
-                    Developed a fraud detection system using Scikit-learn's Random Forest Classifier to classify transactions as fraudulent or legitimate based on various features.
+                    Developed a fraud detection system using Scikit-learn&apos;s Random Forest Classifier to classify transactions as fraudulent or legitimate based on various features.
                   </p>
                 </div>
               </div>
@@ -54,7 +54,7 @@ export default function Projects() {
               </div>
               <div className="flex gap-5 items-start flex-col lg:flex-row">
                 <div className="w-full lg:w-[300px] overflow-hidden rounded-[10px] border-2 border-white/10">
-                  <a href="https://github.com/yourusername/portfolio" target="_blank" rel="noopener noreferrer">
+                  <a href="https://github.com/Cece18/animebetfrontend" target="_blank" rel="noopener noreferrer">
                     <img src="/images/AnimeBet.png" alt="Portfolio Preview" className="w-full h-auto block" />
                   </a>
                 </div>

@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+/* eslint-disable @next/next/no-img-element */
+
+import { useState, useEffect } from 'react'
 import Experience from './components/Experience'
 import Skills from './components/Skills'
 import Education from './components/Education'
@@ -8,15 +10,23 @@ import Projects from './components/Projects'
 import Resume from './components/Resume'
 import Login from './components/Login'
 import Sleep from './components/Sleep'
+import Music from './components/Music'
+import Files from './components/Files'
+import IgrisViewer from './components/IgrisViewer'
 
 export default function Home() {
   const [currentTime, setCurrentTime] = useState('')
   const [activeWindow, setActiveWindow] = useState(null)
+  const [openWindows, setOpenWindows] = useState([])
+  const [minimizedWindows, setMinimizedWindows] = useState([])
   const [menuOpen, setMenuOpen] = useState(false)
   const [highlightedIcon, setHighlightedIcon] = useState(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isSleeping, setIsSleeping] = useState(false)
   const [isWakingUp, setIsWakingUp] = useState(false)
+  const [windowPositions, setWindowPositions] = useState({})
+  const [dragging, setDragging] = useState(null)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0, width: 0, height: 0 })
 
   useEffect(() => {
     const updateTime = () => {
@@ -37,20 +47,82 @@ export default function Home() {
   }, [])
 
   const desktopIcons = [
-    { id: 'skills', title: 'Skills', icon: '/images/Skills.png' },
-    { id: 'experience', title: 'Experience', icon: '/images/Experience.png' },
-    { id: 'education', title: 'Education', icon: '/images/Education.png' },
-    { id: 'projects', title: 'Projects', icon: '/images/Projects.png' },
-    { id: 'resume', title: 'Resume', icon: '/images/Resume.png' },
+    { id: 'skills', title: 'Skills', icon: '/images/Skills.png', showOnDesktop: true },
+    { id: 'experience', title: 'Experience', icon: '/images/Experience.png', showOnDesktop: true },
+    { id: 'education', title: 'Education', icon: '/images/Education.png', showOnDesktop: true },
+    { id: 'projects', title: 'Projects', icon: '/images/Projects.png', showOnDesktop: true },
+    { id: 'resume', title: 'Resume', icon: '/images/Resume.png', showOnDesktop: true },
+    { id: 'files', title: 'Files', icon: '/images/Files.png', showOnDesktop: true },
+    { id: 'music', title: 'Music', icon: '/images/Music.png', showOnDesktop: true },
+    { id: 'igris', title: 'Igris.png', icon: '/images/Igris.png', showOnDesktop: false }
   ]
 
-  const handleIconDoubleClick = (iconId) => {
+  const focusWindow = (iconId) => {
+    setOpenWindows((prev) => {
+      const withoutTarget = prev.filter((id) => id !== iconId)
+      return [...withoutTarget, iconId]
+    })
+    setMinimizedWindows((prev) => prev.filter((id) => id !== iconId))
     setActiveWindow(iconId)
+  }
+
+  const handleIconDoubleClick = (iconId) => {
+    focusWindow(iconId)
+  }
+
+  const handleWindowClose = (iconId) => {
+    setOpenWindows((prev) => {
+      const remaining = prev.filter((id) => id !== iconId)
+      setMinimizedWindows((prevMin) => {
+        const updatedMin = prevMin.filter((id) => id !== iconId)
+        setActiveWindow((current) => {
+          if (current === iconId) {
+            const nextActive = [...remaining]
+              .reverse()
+              .find((id) => !updatedMin.includes(id))
+            return nextActive ?? null
+          }
+          return current
+        })
+        return updatedMin
+      })
+      return remaining
+    })
+  }
+
+  const handleTaskbarIconClick = (iconId) => {
+    const isOpen = openWindows.includes(iconId)
+    const isMinimized = minimizedWindows.includes(iconId)
+
+    if (!isOpen || isMinimized) {
+      focusWindow(iconId)
+      return
+    }
+
+    if (activeWindow === iconId) {
+      setMinimizedWindows((prev) => {
+        if (prev.includes(iconId)) return prev
+        const updated = [...prev, iconId]
+        setActiveWindow(() => {
+          const fallback = [...openWindows]
+            .filter((id) => id !== iconId && !updated.includes(id))
+          return fallback.length ? fallback[fallback.length - 1] : null
+        })
+        return updated
+      })
+      return
+    }
+
+    focusWindow(iconId)
   }
 
   const handleShutdown = () => {
     setMenuOpen(false)
     setIsLoggedIn(false)
+    setActiveWindow(null)
+    setOpenWindows([])
+    setHighlightedIcon(null)
+    setMinimizedWindows([])
   }
 
   const handleSleep = () => {
@@ -78,6 +150,98 @@ export default function Home() {
 
   const handleLogin = () => {
     setIsLoggedIn(true)
+  }
+
+  const handleWindowMouseDown = (e, iconId) => {
+    if (e.target.closest('button')) return // Don't drag if clicking buttons
+    focusWindow(iconId)
+    
+    const windowElement = e.currentTarget.closest('[data-window-id]')
+    if (!windowElement) return
+    
+    const rect = windowElement.getBoundingClientRect()
+    setDragging(iconId)
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      width: rect.width,
+      height: rect.height
+    })
+    document.body.style.userSelect = 'none'
+  }
+
+  const handleWindowContainerMouseDown = (e, iconId) => {
+    if (e.button !== 0) return
+    focusWindow(iconId)
+  }
+
+  useEffect(() => {
+    if (!dragging || typeof window === 'undefined') return
+
+    let animationFrameId = null
+    let lastX = 0
+    let lastY = 0
+
+    const handleMouseMove = (e) => {
+      lastX = e.clientX
+      lastY = e.clientY
+
+      if (animationFrameId) return
+
+      animationFrameId = requestAnimationFrame(() => {
+        const headerHeight = 40
+        const footerHeight = 50
+        const windowWidth = dragOffset.width || window.innerWidth * 0.85
+        const windowHeight = dragOffset.height || window.innerHeight * 0.7
+
+        const maxX = Math.max(0, window.innerWidth - windowWidth)
+        const maxY = Math.max(headerHeight, window.innerHeight - footerHeight - windowHeight)
+        const newX = Math.max(0, Math.min(maxX, lastX - dragOffset.x))
+        const newY = Math.max(headerHeight, Math.min(maxY, lastY - dragOffset.y))
+        
+        setWindowPositions(prev => ({
+          ...prev,
+          [dragging]: { x: newX, y: newY }
+        }))
+        
+        animationFrameId = null
+      })
+    }
+
+    const handleMouseUp = () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = null
+      }
+      setDragging(null)
+      setDragOffset({ x: 0, y: 0, width: 0, height: 0 })
+      document.body.style.userSelect = ''
+    }
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    window.addEventListener('mouseup', handleMouseUp)
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.userSelect = ''
+    }
+  }, [dragging, dragOffset])
+
+  const getWindowPosition = (iconId, index) => {
+    if (windowPositions[iconId]) {
+      return windowPositions[iconId]
+    }
+    // Default centered position with slight offset for multiple windows
+    const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1200
+    const defaultWidth = iconId === 'music' ? 1200 : iconId === 'files' ? 1100 : iconId === 'igris' ? 800 : 1000
+    return {
+      x: Math.max(0, (windowWidth / 2) - (defaultWidth / 2) + (index * 30)),
+      y: 100 + (index * 30)
+    }
   }
 
   return (
@@ -124,6 +288,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center gap-2.5">
+              <img src="/images/wifi.png" alt="WiFi Icon" className="w-5 h-5" />
               <span className="hidden sm:inline">{currentTime}</span>
               <span className="sm:hidden">
                 {new Date().toLocaleTimeString('en-US', {
@@ -141,10 +306,10 @@ export default function Home() {
             absolute top-[60px] right-5 w-[450px] bg-white/90 rounded-lg shadow-lg p-4 z-5
             hidden lg:block
           ">
-            <h2 className="text-3xl mb-2.5 text-[#4A90E2] font-extrabold">Hi, I'm Charlene</h2>
+            <h2 className="text-3xl mb-2.5 text-[#4A90E2] font-extrabold">Hi, I&#39;m Charlene</h2>
             <h3 className="text-xl font-bold">Full Stack Developer</h3>
             <p className="text-base leading-relaxed mb-2.5">
-              I'm a software engineer from London, UK, passionate about backend development 
+              I&#39;m a software engineer from London, UK, passionate about backend development 
               and building high-impact projects.
             </p>
             <p className="text-base leading-relaxed mb-2.5">
@@ -160,7 +325,9 @@ export default function Home() {
           >
             {/* Desktop Icons */}
             <div className="absolute top-[60px] left-4 grid grid-cols-1 sm:grid-cols-2 gap-5 z-1">
-              {desktopIcons.map((icon) => (
+              {desktopIcons
+                .filter((icon) => icon.showOnDesktop !== false)
+                .map((icon) => (
                 <div 
                   key={icon.id} 
                   className={`
@@ -183,95 +350,181 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Window */}
-            {activeWindow && (
-              <div className={`
-                fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                w-[95vw] sm:w-[85vw] lg:w-[66vw]
-                h-[80vh] sm:h-[75vh] lg:h-[66vh]
-                bg-[rgba(240,237,242,0.9)]
-                rounded-xl
-                outline-4 outline-[#5167b1] outline-offset-[-4px]
-                z-30
-                overflow-hidden
-                flex flex-col
-              `}>
-                <div className="flex items-center justify-between p-3 bg-[#5167b1] text-white">
-                  <div className="flex items-center gap-2">
-                    <img 
-                      src={desktopIcons.find(icon => icon.id === activeWindow)?.icon}
-                      alt={desktopIcons.find(icon => icon.id === activeWindow)?.title}
-                      className="w-6 h-6" 
-                    />
-                    <span className="text-xl font-bold tracking-wide">
-                      {desktopIcons.find(icon => icon.id === activeWindow)?.title}
-                    </span>
-                  </div>
-                  <button 
-                      onClick={() => setActiveWindow(null)}
-                      className="
-                        w-[60px] 
-                        h-[40px] 
-                        rounded-full 
-                        bg-[#e7f2f9] 
-                        cursor-pointer 
-                        text-center 
-                        leading-[38px]
-                        text-[1.4em]
-                        font-bold
-                        text-black
-                        hover:bg-[#d1e5f5]
-                        transition-colors
-                        duration-200
-                      "
+            {/* Windows */}
+            {openWindows
+              .filter((iconId) => !minimizedWindows.includes(iconId))
+              .map((iconId, index) => {
+                const iconMeta = desktopIcons.find((icon) => icon.id === iconId)
+                if (!iconMeta) return null
+                const isActive = activeWindow === iconId
+                const position = getWindowPosition(iconId, index)
+                return (
+                  <div
+                    key={`window-${iconId}`}
+                    data-window-id={iconId}
+                    className={`
+                      fixed
+                      w-[95vw] sm:w-[85vw] ${iconId === 'music' ? 'lg:w-[1200px]' : iconId === 'files' ? 'lg:w-[1100px]' : 'lg:w-[1000px]'}
+                      h-[75vh] sm:h-[70vh] lg:h-[600px]
+                      bg-white
+                      rounded-xl
+                      overflow-hidden flex flex-col transition-all
+                      outline-none border-0
+                      ${isActive ? 'z-40 shadow-2xl' : 'z-30 shadow-lg opacity-90'}
+                    `}
+                    style={{ 
+                      left: `${position.x}px`, 
+                      top: `${position.y}px`,
+                      transform: 'none'
+                    }}
+                    onMouseDown={(e) => handleWindowContainerMouseDown(e, iconId)}
+                  >
+                    {/* Title Bar */}
+                    <div 
+                      className={`
+                        flex items-center justify-between h-14 px-3
+                        ${isActive ? 'bg-[#4a5568]' : 'bg-[#718096]'}
+                        text-white select-none
+                      `}
+                      onMouseDown={(e) => handleWindowMouseDown(e, iconId)}
                     >
-                      ✕
-                    </button>
-
-                </div>
-                <div className="flex-1 p-5 overflow-y-auto">
-                  {activeWindow === 'experience' ? (
-                    <Experience />
-                  ) : activeWindow === 'skills' ? (
-                    <Skills />
-                  ) : activeWindow === 'education' ? (
-                    <Education />
-                  ) : activeWindow === 'projects' ? (
-                    <Projects />
-                  ) : activeWindow === 'resume' ? (
-                    <Resume />
-                  ) : (
-                    <h2>Content for {activeWindow}</h2>
-                  )}
-                </div>
-              </div>
-            )}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <img 
+                          src={iconMeta.icon}
+                          alt={iconMeta.title}
+                          className="w-10 h-10 flex-shrink-0" 
+                        />
+                        <span className="text-lg font-semibold truncate">
+                          {iconMeta.title}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setMinimizedWindows((prev) => {
+                              if (prev.includes(iconId)) return prev
+                              const updated = [...prev, iconId]
+                              setActiveWindow((current) => {
+                                if (current === iconId) {
+                                  const fallback = [...openWindows]
+                                    .filter((id) => id !== iconId && !updated.includes(id))
+                                  return fallback.length ? fallback[fallback.length - 1] : null
+                                }
+                                return current
+                              })
+                              return updated
+                            })
+                          }}
+                          className="
+                            w-6 h-6 flex items-center justify-center
+                            bg-white/20 hover:bg-white/30
+                            text-white text-xs font-bold
+                            transition-colors duration-150
+                            border border-white/30 rounded-md
+                          "
+                          aria-label="Minimize window"
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          &minus;
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleWindowClose(iconId)
+                          }}
+                          className="
+                            w-6 h-6 flex items-center justify-center
+                            bg-red-500/80 hover:bg-red-600
+                            text-white text-xs font-bold
+                            transition-colors duration-150
+                            border border-red-600 rounded-md
+                          "
+                          aria-label="Close window"
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Window Content */}
+                    <div className={`flex-1 overflow-y-auto ${iconId === 'music' || iconId === 'files' ? 'p-0' : 'p-5 bg-white border-t border-gray-200'}`}>
+                      {iconId === 'experience' ? (
+                        <Experience />
+                      ) : iconId === 'skills' ? (
+                        <Skills />
+                      ) : iconId === 'education' ? (
+                        <Education />
+                      ) : iconId === 'projects' ? (
+                        <Projects />
+                      ) : iconId === 'resume' ? (
+                        <Resume />
+                      ) : iconId === 'files' ? (
+                        <Files onOpenWindow={focusWindow} />
+                      ) : iconId === 'music' ? (
+                        <Music />
+                      ) : iconId === 'igris' ? (
+                        <IgrisViewer />
+                      ) : (
+                        <h2>Content for {iconId}</h2>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
           </div>
 
           {/* Bottom Bar */}
-          <footer className="fixed bottom-0 left-0 right-0 h-[50px] bg-[#d4e1f5] flex items-center px-5">
-            <button 
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 mr-2.5 cursor-pointer"
-            >
-              <img src="/images/power.png" alt="Home Icon" className="w-[69%] h-[69%] mt-1.5" />
-            </button>
-            
-            {menuOpen && (
-              <div className="absolute bottom-[60px] left-2.5 bg-[#2d2d2d] border border-[#444] 
-                rounded shadow-md">
-                <ul className="p-2.5">
-                  <li className="px-4 py-2 cursor-pointer text-white hover:bg-[#ff69b4]"
-                    onClick={handleShutdown}>
-                    Shut Down
-                  </li>
-                  <li className="px-4 py-2 cursor-pointer text-white hover:bg-[#ff69b4]"
-                    onClick={handleSleep}>
-                    Sleep
-                  </li>
-                </ul>
-              </div>
-            )}
+          <footer className="fixed bottom-0 left-0 right-0 h-[50px] bg-[#d4e1f5] flex items-center px-5 gap-4">
+            <div className="relative">
+              <button 
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="w-10 h-10 cursor-pointer"
+              >
+                <img src="/images/power.png" alt="Home Icon" className="w-[69%] h-[69%] mt-1.5" />
+              </button>
+              {menuOpen && (
+                <div className="absolute bottom-[60px] left-1 bg-[#2d2d2d] border border-[#444] rounded shadow-md">
+                  <ul className="p-2.5 min-w-[140px]">
+                    <li className="px-4 py-2 cursor-pointer text-white hover:bg-[#ff69b4]"
+                      onClick={handleShutdown}>
+                      Shut Down
+                    </li>
+                    <li className="px-4 py-2 cursor-pointer text-white hover:bg-[#ff69b4]"
+                      onClick={handleSleep}>
+                      Sleep
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 flex items-center gap-2 overflow-x-auto">
+              {openWindows.map((iconId) => {
+                const iconMeta = desktopIcons.find((icon) => icon.id === iconId)
+                if (!iconMeta) return null
+                const isActive = activeWindow === iconId
+                const isMinimized = minimizedWindows.includes(iconId)
+                return (
+                  <button
+                    key={`taskbar-${iconId}`}
+                    onClick={() => handleTaskbarIconClick(iconId)}
+                    className={`
+                      flex items-center gap-2 px-3 h-9 min-w-[120px]
+                      rounded-md border transition-all
+                      ${isActive ? 'bg-white border-[#5167b1] shadow-md scale-[1.01]' : 'bg-white/70 border-transparent hover:bg-white/90'}
+                      ${isMinimized && !isActive ? 'opacity-60' : 'opacity-100'}
+                    `}
+                  >
+                    <img src={iconMeta.icon} alt={`${iconMeta.title} icon`} className="w-5 h-5 flex-shrink-0" />
+                    <span className={`text-xs font-semibold tracking-wide truncate ${isActive ? 'text-[#2B2B2B]' : 'text-[#394b7d]'}`}>
+                      {iconMeta.title}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </footer>
         </div>
       )}
