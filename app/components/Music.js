@@ -153,83 +153,94 @@ export default function Music() {
     setCurrentTime(newTime)
   }
 
-  // Generate a vinyl/CD style image with gradient matching the theme
-  const getVinylImage = (track) => {
-    return `data:image/svg+xml,${encodeURIComponent(`
-      <svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="vinylGrad">
-            <stop offset="0%" style="stop-color:#6b5b95;stop-opacity:1" />
-            <stop offset="50%" style="stop-color:#4a4a6a;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#2d2d3a;stop-opacity:1" />
-          </radialGradient>
-        </defs>
-        <circle cx="150" cy="150" r="150" fill="url(#vinylGrad)"/>
-        <circle cx="150" cy="150" r="120" fill="none" stroke="#8b7db8" stroke-width="2"/>
-        <circle cx="150" cy="150" r="90" fill="none" stroke="#8b7db8" stroke-width="1"/>
-        <circle cx="150" cy="150" r="60" fill="none" stroke="#8b7db8" stroke-width="1"/>
-        <circle cx="150" cy="150" r="30" fill="#b2d7ff"/>
-        <circle cx="150" cy="150" r="20" fill="#2d2d3a"/>
-        <text x="150" y="80" text-anchor="middle" fill="#b2d7ff" font-size="14" font-weight="bold">${track?.title.substring(0, 20) || 'Track'}</text>
-      </svg>
-    `)}`
-  }
-
   return (
-    <div className="min-h-full w-full bg-gradient-to-br from-[#b2d7ff] via-[#d8b2ff] to-[#b2d7ff] p-6">
+    <div className="min-h-full w-full bg-gradient-to-br from-[#b2d7ff] via-[#d8b2ff] to-[#b2d7ff] p-3 sm:p-5 text-sm sm:text-base">
       <div className="max-w-7xl mx-auto min-h-full flex flex-col">
         {/* Hidden audio element */}
         <audio ref={audioRef} preload="metadata" />
 
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold text-[#2B2B2B] mb-2">Music Player</h1>
-          <p className="text-[#2B2B2B]/80 text-lg">Your music, your way</p>
+        <div className="mb-4 sm:mb-5">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#2B2B2B] mb-1.5">Music Player</h1>
+          <p className="text-[#2B2B2B]/80 text-sm sm:text-base">Your music, your way</p>
         </div>
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
           {/* Now Playing Section */}
           <div className="lg:col-span-2 flex flex-col min-h-0">
-            <div className="bg-[rgba(101,101,142,0.85)] border-2 border-white/10 rounded-2xl p-6 flex-1 flex flex-col min-h-0 overflow-y-auto">
-              <h2 className="text-2xl font-bold text-[#f5f5f5] mb-4">Now Playing</h2>
+            <div className="bg-[rgba(101,101,142,0.85)] border-2 border-white/10 rounded-2xl p-4 sm:p-5 flex-1 flex flex-col min-h-0 overflow-y-auto">
+              <h2 className="text-lg sm:text-xl font-bold text-[#f5f5f5] mb-3">Now Playing</h2>
               
               {currentTrack ? (
-                <div className="flex flex-col items-center space-y-6">
-                  {/* Vinyl/CD Album Art with spinning effect */}
-                  <div className="relative">
-                    <div 
-                      className={`w-64 h-64 rounded-full overflow-hidden shadow-2xl border-8 border-[#b2d7ff]/30 ${
-                        isPlaying ? 'animate-spin' : ''
-                      }`}
+                <div className="flex flex-col items-center space-y-4">
+                  {/* Vinyl Record */}
+                  <div className="relative flex items-center justify-center">
+                    <div
+                      className="relative w-56 h-56 md:w-72 md:h-72 rounded-full bg-gradient-to-br from-[hsl(240,10%,12%)] to-[hsl(240,10%,22%)] shadow-2xl"
                       style={{
-                        animationDuration: '8s',
-                        animationTimingFunction: 'linear'
+                        animation: isPlaying ? 'vinyl-spin 10s linear infinite' : 'none',
+                        boxShadow: isPlaying
+                          ? '0 0 60px hsl(330 70% 65% / 0.4), inset 0 0 30px hsl(0 0% 0% / 0.5)'
+                          : '0 25px 50px -12px hsl(0 0% 0% / 0.4), inset 0 0 30px hsl(0 0% 0% / 0.5)'
                       }}
                     >
-                      <img 
-                        src={getVinylImage(currentTrack)} 
-                        alt={currentTrack.title}
-                        className="w-full h-full object-cover"
+                      {[...Array(8)].map((_, i) => (
+                        <div
+                          key={`groove-${i}`}
+                          className="absolute rounded-full border border-[hsl(240,5%,25%)]"
+                          style={{
+                            top: `${12 + i * 5}%`,
+                            left: `${12 + i * 5}%`,
+                            right: `${12 + i * 5}%`,
+                            bottom: `${12 + i * 5}%`
+                          }}
+                        />
+                      ))}
+
+                      <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-[hsl(240,10%,8%)]"
+                        style={{
+                          background: currentTrack?.albumArt
+                            ? `url(${currentTrack.albumArt}) center/cover`
+                            : 'linear-gradient(135deg, hsl(330 70% 75%) 0%, hsl(210 70% 80%) 100%)'
+                        }}
+                      >
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[hsl(240,10%,8%)]" />
+                      </div>
+
+                      <div
+                        className="absolute inset-0 rounded-full opacity-30"
+                        style={{
+                          background: 'linear-gradient(135deg, transparent 40%, hsl(0 0% 100% / 0.1) 50%, transparent 60%)'
+                        }}
                       />
                     </div>
-                    {/* Center hole effect */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-[#2d2d3a] rounded-full border-2 border-[#b2d7ff]/50"></div>
+
+                    {isPlaying && (
+                      <div
+                        className="absolute inset-0 rounded-full pointer-events-none"
+                        style={{
+                          background: 'radial-gradient(circle, hsl(330 70% 65% / 0.15) 0%, transparent 70%)',
+                          animation: 'pulse-glow 2.6s ease-in-out infinite'
+                        }}
+                      />
+                    )}
                   </div>
 
                   {/* Track Info */}
                   <div className="text-center">
-                    <h3 className="text-2xl font-bold text-[#f5f5f5] mb-2">{currentTrack.title}</h3>
-                    <p className="text-xl text-[#d0def3] mb-1">{currentTrack.artist}</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-[#f5f5f5] mb-1">{currentTrack.title}</h3>
+                    <p className="text-base sm:text-lg text-[#d0def3]">{currentTrack.artist}</p>
                   </div>
 
                   {/* Progress Bar */}
                   <div className="w-full max-w-md">
-                    <div className="flex justify-between text-sm text-[#d0def3] mb-2">
+                    <div className="flex justify-between text-xs sm:text-sm text-[#d0def3] mb-1.5">
                       <span>{formatTime(currentTime)}</span>
                       <span>{formatTime(duration)}</span>
                     </div>
                     <div 
-                      className="w-full h-3 bg-white/20 rounded-full overflow-hidden cursor-pointer relative"
+                      className="w-full h-2.5 bg-white/20 rounded-full overflow-hidden cursor-pointer relative"
                       onClick={handleProgressChange}
                     >
                       <div 
@@ -238,8 +249,8 @@ export default function Music() {
                       />
                       {/* Progress handle */}
                       <div 
-                        className="absolute top-1/2 transform -translate-y-1/2 w-4 h-4 bg-[#b2d7ff] rounded-full shadow-lg"
-                        style={{ left: `calc(${duration ? (currentTime / duration) * 100 : 0}% - 8px)` }}
+                        className="absolute top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 bg-[#b2d7ff] rounded-full shadow-lg"
+                        style={{ left: `calc(${duration ? (currentTime / duration) * 100 : 0}% - 7px)` }}
                       />
                     </div>
                   </div>
@@ -249,7 +260,7 @@ export default function Music() {
                     <button 
                       onClick={handlePrevious}
                       disabled={currentTrackIndex === null}
-                      className="w-12 h-12 flex items-center justify-center text-[#f5f5f5] hover:text-[#b2d7ff] transition-colors hover:scale-110 bg-white/10 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-[#f5f5f5] hover:text-[#b2d7ff] transition-colors hover:scale-110 bg-white/10 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Previous song"
                     >
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -259,7 +270,7 @@ export default function Music() {
                     <button 
                       onClick={handlePlayPause}
                       disabled={currentTrackIndex === null}
-                      className="w-16 h-16 flex items-center justify-center bg-[#b2d7ff] text-[#2B2B2B] rounded-full hover:scale-110 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center bg-[#b2d7ff] text-[#2B2B2B] rounded-full hover:scale-110 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={isPlaying ? 'Pause' : 'Play'}
                     >
                       {isPlaying ? (
@@ -275,7 +286,7 @@ export default function Music() {
                     <button 
                       onClick={handleNext}
                       disabled={currentTrackIndex === null}
-                      className="w-12 h-12 flex items-center justify-center text-[#f5f5f5] hover:text-[#b2d7ff] transition-colors hover:scale-110 bg-white/10 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-[#f5f5f5] hover:text-[#b2d7ff] transition-colors hover:scale-110 bg-white/10 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Next song"
                     >
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -284,7 +295,7 @@ export default function Music() {
                     </button>
                     
                     {/* Volume Control with Icon */}
-                    <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2">
+                    <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-2">
                       <svg className="w-5 h-5 text-[#f5f5f5]" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
                       </svg>
@@ -294,7 +305,7 @@ export default function Music() {
                         max="100"
                         value={volume}
                         onChange={(e) => setVolume(e.target.value)}
-                        className="w-24 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#b2d7ff] [&::-webkit-slider-thumb]:cursor-pointer"
+                        className="w-20 sm:w-24 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#b2d7ff] [&::-webkit-slider-thumb]:cursor-pointer"
                       />
                       <span className="text-[#d0def3] text-sm w-8">{volume}%</span>
                     </div>
@@ -317,27 +328,27 @@ export default function Music() {
           {/* Playlist Section */}
           <div className="lg:col-span-1 flex flex-col min-h-0">
             <div className="bg-[rgba(101,101,142,0.85)] border-2 border-white/10 rounded-2xl p-6 flex-1 overflow-hidden flex flex-col min-h-0">
-              <h2 className="text-2xl font-bold text-[#f5f5f5] mb-4">Playlist</h2>
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+              <h2 className="text-lg sm:text-xl font-bold text-[#f5f5f5] mb-3">Playlist</h2>
+              <div className="flex-1 overflow-y-auto space-y-3 px-1 pt-3 flex flex-col items-center">
                 {playlist.map((track, index) => (
                   <button
                     key={track.id}
                     onClick={() => handleTrackSelect(index)}
-                    className={`w-full p-3 rounded-xl text-left transition-all ${
+                    className={`w-[88%] max-w-[380px] p-3.5 rounded-xl text-left transition-all ${
                       currentTrackIndex === index
                         ? 'bg-white/20 shadow-lg scale-105 border-2 border-[#b2d7ff]/50'
                         : 'bg-white/5 hover:bg-white/10 border-2 border-transparent'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-[#b2d7ff]/20 flex items-center justify-center">
                         <svg className="w-5 h-5 text-[#b2d7ff]" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                         </svg>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-[#f5f5f5] font-semibold truncate">{track.title}</h4>
-                        <p className="text-[#d0def3] text-sm truncate">{track.artist}</p>
+                        <h4 className="text-[#f5f5f5] text-sm sm:text-base font-semibold truncate">{track.title}</h4>
+                        <p className="text-[#d0def3] text-xs sm:text-sm truncate">{track.artist}</p>
                       </div>
                       {currentTrackIndex === index && isPlaying && (
                         <div className="flex-shrink-0">
@@ -352,6 +363,17 @@ export default function Music() {
           </div>
         </div>
       </div>
+      <style jsx>{`
+        @keyframes vinyl-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes pulse-glow {
+          0% { opacity: 0.25; transform: scale(0.98); }
+          50% { opacity: 0.5; transform: scale(1.03); }
+          100% { opacity: 0.25; transform: scale(0.98); }
+        }
+      `}</style>
     </div>
   )
 }

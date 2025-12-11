@@ -84,26 +84,6 @@ export default function Login({ onLogin }) {
           Welcome
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <input
-            type="text"
-            placeholder="Click here to enter username"
-            className="
-              p-4
-              bg-white/90
-              border-2
-              border-[#5167b1]
-              rounded-lg
-              text-center
-              text-base
-              text-black
-              transition-all
-              duration-300
-              focus:outline-none
-              focus:border-[#8c74b5]
-              focus:shadow-[0_0_10px_rgba(81,103,177,0.2)]
-              placeholder:text-black/50
-            "
-          />
           <button
             type="submit"
             className="
