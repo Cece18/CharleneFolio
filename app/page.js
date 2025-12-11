@@ -345,7 +345,7 @@ export default function Home() {
             onClick={handleDesktopClick}
           >
             {/* Desktop Icons */}
-            <div className="absolute top-[60px] left-4 grid grid-cols-1 sm:grid-cols-2 gap-5 z-1">
+            <div className="absolute top-[60px] left-4 grid grid-cols-2 sm:grid-cols-2 gap-5 z-1">
               {desktopIcons
                 .filter((icon) => icon.showOnDesktop !== false)
                 .map((icon) => (
@@ -362,11 +362,11 @@ export default function Home() {
                     src={icon.icon}
                     alt={icon.title}
                     className={`
-                      w-20 h-20 rounded-lg p-2.5 transition-transform
+                      w-16 h-16 sm:w-20 sm:h-20 rounded-lg p-2 transition-transform
                       ${highlightedIcon === icon.id ? 'scale-110' : 'hover:scale-110'}
                     `}
                   />
-                  <p className="mt-2.5 text-sm font-bold">{icon.title}</p>
+                  <p className="mt-2.5 text-xs sm:text-sm font-bold">{icon.title}</p>
                 </div>
               ))}
             </div>
@@ -391,8 +391,8 @@ export default function Home() {
                     }}
                     className={`
                       fixed
-                      w-[95vw] sm:w-[85vw] ${iconId === 'music' ? 'lg:w-[1200px]' : iconId === 'files' ? 'lg:w-[1100px]' : 'lg:w-[1000px]'}
-                      h-[75vh] sm:h-[70vh] lg:h-[600px]
+                      w-[92vw] sm:w-[85vw] ${iconId === 'music' ? 'lg:w-[1200px]' : iconId === 'files' ? 'lg:w-[1100px]' : 'lg:w-[1000px]'}
+                      h-[68vh] sm:h-[70vh] lg:h-[600px]
                       bg-white
                       rounded-xl
                       overflow-hidden flex flex-col transition-all
@@ -411,7 +411,7 @@ export default function Home() {
                     {/* Title Bar */}
                     <div 
                       className={`
-                        flex items-center justify-between h-14 px-3
+                        flex items-center justify-between h-12 sm:h-14 px-3 sm:px-4
                         ${isActive ? 'bg-[#4a5568]' : 'bg-[#718096]'}
                         text-white select-none
                       `}
@@ -478,7 +478,7 @@ export default function Home() {
                     </div>
                     
                     {/* Window Content */}
-                    <div className={`flex-1 overflow-y-auto ${iconId === 'music' || iconId === 'files' ? 'p-0' : 'p-5 bg-white border-t border-gray-200'}`}>
+                    <div className={`flex-1 overflow-y-auto ${iconId === 'music' || iconId === 'files' ? 'p-0' : 'p-4 sm:p-5 bg-white border-t border-gray-200'}`}>
                       {iconId === 'experience' ? (
                         <Experience />
                       ) : iconId === 'skills' ? (
