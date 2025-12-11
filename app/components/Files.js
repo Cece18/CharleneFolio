@@ -52,6 +52,11 @@ const FILE_LIBRARY = {
   ],
   downloads: [
     {
+      name: 'Important Notes.txt',
+      icon: '/images/txt-file.png',
+      accent: '#FF9A8B'
+    },
+    {
       name: 'Safetune Setup.dmg',
       detail: 'Installer',
       icon: '/images/Safetune.jpg',

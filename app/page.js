@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Experience from './components/Experience'
 import Skills from './components/Skills'
 import Education from './components/Education'
@@ -25,8 +25,10 @@ export default function Home() {
   const [isSleeping, setIsSleeping] = useState(false)
   const [isWakingUp, setIsWakingUp] = useState(false)
   const [windowPositions, setWindowPositions] = useState({})
-  const [dragging, setDragging] = useState(null)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0, width: 0, height: 0 })
+  const windowRefs = useRef({})
+  const draggingIdRef = useRef(null)
+  const dragOffsetRef = useRef({ x: 0, y: 0 })
+  const liveWindowPositionsRef = useRef({})
 
   useEffect(() => {
     const updateTime = () => {
@@ -155,18 +157,16 @@ export default function Home() {
   const handleWindowMouseDown = (e, iconId) => {
     if (e.target.closest('button')) return // Don't drag if clicking buttons
     focusWindow(iconId)
-    
-    const windowElement = e.currentTarget.closest('[data-window-id]')
+
+    const windowElement = windowRefs.current[iconId]
     if (!windowElement) return
-    
+
     const rect = windowElement.getBoundingClientRect()
-    setDragging(iconId)
-    setDragOffset({
+    draggingIdRef.current = iconId
+    dragOffsetRef.current = {
       x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-      width: rect.width,
-      height: rect.height
-    })
+      y: e.clientY - rect.top
+    }
     document.body.style.userSelect = 'none'
   }
 
@@ -176,51 +176,67 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (!dragging || typeof window === 'undefined') return
+    if (typeof window === 'undefined') return
 
     let animationFrameId = null
-    let lastX = 0
-    let lastY = 0
 
     const handleMouseMove = (e) => {
-      lastX = e.clientX
-      lastY = e.clientY
+      const draggingId = draggingIdRef.current
+      if (!draggingId) return
+
+      const windowElement = windowRefs.current[draggingId]
+      if (!windowElement) return
+
+      const { x: offsetX, y: offsetY } = dragOffsetRef.current
+      const headerHeight = 40
+      const footerHeight = 50
+      const rect = windowElement.getBoundingClientRect()
+      const windowWidth = rect.width
+      const windowHeight = rect.height
+
+      const maxX = Math.max(0, window.innerWidth - windowWidth)
+      const maxY = Math.max(headerHeight, window.innerHeight - footerHeight - windowHeight)
+
+      const targetX = Math.max(0, Math.min(maxX, e.clientX - offsetX))
+      const targetY = Math.max(headerHeight, Math.min(maxY, e.clientY - offsetY))
 
       if (animationFrameId) return
 
       animationFrameId = requestAnimationFrame(() => {
-        const headerHeight = 40
-        const footerHeight = 50
-        const windowWidth = dragOffset.width || window.innerWidth * 0.85
-        const windowHeight = dragOffset.height || window.innerHeight * 0.7
-
-        const maxX = Math.max(0, window.innerWidth - windowWidth)
-        const maxY = Math.max(headerHeight, window.innerHeight - footerHeight - windowHeight)
-        const newX = Math.max(0, Math.min(maxX, lastX - dragOffset.x))
-        const newY = Math.max(headerHeight, Math.min(maxY, lastY - dragOffset.y))
-        
-        setWindowPositions(prev => ({
-          ...prev,
-          [dragging]: { x: newX, y: newY }
-        }))
-        
+        windowElement.style.left = `${targetX}px`
+        windowElement.style.top = `${targetY}px`
+        liveWindowPositionsRef.current[draggingId] = { x: targetX, y: targetY }
         animationFrameId = null
       })
     }
 
     const handleMouseUp = () => {
+      const draggingId = draggingIdRef.current
+      if (!draggingId) return
+
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId)
         animationFrameId = null
       }
-      setDragging(null)
-      setDragOffset({ x: 0, y: 0, width: 0, height: 0 })
+
+      const windowElement = windowRefs.current[draggingId]
+      if (windowElement) {
+        const rect = windowElement.getBoundingClientRect()
+        liveWindowPositionsRef.current[draggingId] = { x: rect.left, y: rect.top }
+        setWindowPositions((prev) => ({
+          ...prev,
+          [draggingId]: { x: rect.left, y: rect.top }
+        }))
+      }
+
+      draggingIdRef.current = null
+      dragOffsetRef.current = { x: 0, y: 0 }
       document.body.style.userSelect = ''
     }
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('mouseup', handleMouseUp)
-    
+
     return () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId)
@@ -228,10 +244,15 @@ export default function Home() {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
       document.body.style.userSelect = ''
+      draggingIdRef.current = null
+      dragOffsetRef.current = { x: 0, y: 0 }
     }
-  }, [dragging, dragOffset])
+  }, [])
 
   const getWindowPosition = (iconId, index) => {
+    if (liveWindowPositionsRef.current[iconId]) {
+      return liveWindowPositionsRef.current[iconId]
+    }
     if (windowPositions[iconId]) {
       return windowPositions[iconId]
     }
@@ -351,17 +372,23 @@ export default function Home() {
             </div>
 
             {/* Windows */}
-            {openWindows
-              .filter((iconId) => !minimizedWindows.includes(iconId))
-              .map((iconId, index) => {
+            {openWindows.map((iconId, index) => {
                 const iconMeta = desktopIcons.find((icon) => icon.id === iconId)
                 if (!iconMeta) return null
                 const isActive = activeWindow === iconId
+                const isMinimized = minimizedWindows.includes(iconId)
                 const position = getWindowPosition(iconId, index)
                 return (
                   <div
                     key={`window-${iconId}`}
                     data-window-id={iconId}
+                    ref={(el) => {
+                      if (el) {
+                        windowRefs.current[iconId] = el
+                      } else {
+                        delete windowRefs.current[iconId]
+                      }
+                    }}
                     className={`
                       fixed
                       w-[95vw] sm:w-[85vw] ${iconId === 'music' ? 'lg:w-[1200px]' : iconId === 'files' ? 'lg:w-[1100px]' : 'lg:w-[1000px]'}
@@ -375,7 +402,9 @@ export default function Home() {
                     style={{ 
                       left: `${position.x}px`, 
                       top: `${position.y}px`,
-                      transform: 'none'
+                      transform: 'none',
+                      visibility: isMinimized ? 'hidden' : 'visible',
+                      pointerEvents: isMinimized ? 'none' : 'auto'
                     }}
                     onMouseDown={(e) => handleWindowContainerMouseDown(e, iconId)}
                   >

@@ -80,6 +80,19 @@ export default function Music() {
     }
   }, [currentTrackIndex])
 
+  // Load new track before attempting to play
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio || !currentTrack) return
+
+    audio.src = currentTrack.url
+    audio.load()
+    setCurrentTime(0)
+    if (isPlaying) {
+      audio.play().catch(err => console.error('Play error:', err))
+    }
+  }, [currentTrackIndex])
+
   // Play/pause control
   useEffect(() => {
     const audio = audioRef.current
@@ -98,19 +111,6 @@ export default function Music() {
     if (!audio) return
     audio.volume = volume / 100
   }, [volume])
-
-  // Load new track
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio || !currentTrack) return
-
-    audio.src = currentTrack.url
-    audio.load()
-    setCurrentTime(0)
-    if (isPlaying) {
-      audio.play().catch(err => console.error('Play error:', err))
-    }
-  }, [currentTrackIndex])
 
   const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return '0:00'
