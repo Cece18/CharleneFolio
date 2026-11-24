@@ -9,16 +9,24 @@ export default function Skills() {
           <ul className="list-none p-0 m-0 relative z-[1]">
             <li className="p-6 rounded-[15px] mb-4 text-left relative overflow-hidden text-[#f5f5f5]">
               <p className="mb-6 text-xl">
-                <strong className="text-[#d0def3] text-2xl">Languages & Frameworks:</strong>{" "}
-                Java, Python, HTML/CSS, JavaScript, SQL, C/C++ , Spring Boot, React, Node.js
+                <strong className="text-[#d0def3] text-2xl">Languages:</strong>{" "}
+                Java, Python, SQL, JavaScript, TypeScript
               </p>
               <p className="mb-6 text-xl">
-                <strong className="text-[#d0def3] text-2xl">Database & Networking:</strong>{" "}
-                MySQL, Postgres, NoSQL, Neo4j
+                <strong className="text-[#d0def3] text-2xl">Backend:</strong>{" "}
+                Spring Boot, REST APIs, Kafka, Apache Spark, Microservices
               </p>
               <p className="mb-6 text-xl">
-                <strong className="text-[#d0def3] text-2xl">Tools & Platforms:</strong>{" "}
-                Git, GitLab, Linux, shell scripting, AWS (Lambda, S3), Kafka, Docker
+                <strong className="text-[#d0def3] text-2xl">Frontend:</strong>{" "}
+                React, React Native, Expo, HTML/CSS
+              </p>
+              <p className="mb-6 text-xl">
+                <strong className="text-[#d0def3] text-2xl">Data:</strong>{" "}
+                Oracle, Hive, MySQL, MongoDB, Neo4j
+              </p>
+              <p className="mb-6 text-xl">
+                <strong className="text-[#d0def3] text-2xl">DevOps / Infrastructure:</strong>{" "}
+                Docker, AWS (Lambda, S3), Git, Linux, Autosys, CI/CD
               </p>
             </li>
           </ul>
